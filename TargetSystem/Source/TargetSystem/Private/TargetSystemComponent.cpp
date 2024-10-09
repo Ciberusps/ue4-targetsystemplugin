@@ -467,7 +467,7 @@ void UTargetSystemComponent::CreateAndAttachTargetLockedOnWidgetComponent(const 
 	TargetLockedOnWidgetComponent->RegisterComponent();
 }
 
-void UTargetSystemComponent::AddPotentialTargetsByInterface(const TSubclassOf<AActor> ActorClass)
+void UTargetSystemComponent::AddPotentialTargetsByInterface(const TSubclassOf<AActor>& ActorClass)
 {
 	for (TActorIterator ActorIterator(GetWorld(), ActorClass); ActorIterator; ++ActorIterator)
 	{
@@ -550,7 +550,7 @@ TScriptInterface<ITargetSystemInterface> UTargetSystemComponent::FindNearestTarg
 
         if (Distance > MaximumDistanceCanStartTarget) continue;
 
-        if (!IsInViewport(PotentialTargets[i]) && Distance > DangerousDistanceToTarget) continue;
+        if (!bIgnoreViewport && !IsInViewport(PotentialTargets[i]) && Distance > DangerousDistanceToTarget) continue;
 
         if (!bFindNearestTarget)
         {
@@ -563,7 +563,7 @@ TScriptInterface<ITargetSystemInterface> UTargetSystemComponent::FindNearestTarg
         CopyPotentialTargets.Add(PotentialTargets[i]);
     }
     if (BestTargetByDistance_Index < 0) return nullptr;
-    if (!bUseAngle) return PotentialTargets[BestTargetByDistance_Index];
+    if (!bUseAngle || bIgnoreViewport) return PotentialTargets[BestTargetByDistance_Index];
 
     SortPotentialTargetsByAngle(CopyPotentialTargets);
 
@@ -579,12 +579,12 @@ TScriptInterface<ITargetSystemInterface> UTargetSystemComponent::FindNearestTarg
     return PotentialTargets[BestTargetByDistance_Index];
 }
 
-bool UTargetSystemComponent::LineTrace(const FVector Start, const FVector End, FHitResult& Hit) const
+bool UTargetSystemComponent::LineTrace(const FVector& Start, const FVector& End, FHitResult& Hit) const
 {
     FCollisionQueryParams Params;
     Params.AddIgnoredActor(GetOwner());
 
-    TArray<AActor*> IgnoredActors;
+	TArray<AActor*> IgnoredActors {};
     IgnoredActors.Init(OwnerActor, 1);
     for (AActor* ChildActor : OwnerActor->Children)
     {
@@ -657,13 +657,13 @@ FRotator UTargetSystemComponent::GetControlRotationOnTarget(TargetInterface Inte
 	return FMath::RInterpTo(ControlRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), 9.0f);
 }
 
-FTargetActorDetails UTargetSystemComponent::GetTargetDetails(TargetInterface Interface) const
+FTargetActorDetails UTargetSystemComponent::GetTargetDetails(const TargetInterface& Interface) const
 {
     if (!Interface) return {};
     return Interface->GetTargetSystemDependencies()->GetTargetActorDetails();
 }
 
-FVector UTargetSystemComponent::GetTargetOwnerLocation(TargetInterface Interface) const
+FVector UTargetSystemComponent::GetTargetOwnerLocation(const TargetInterface& Interface) const
 {
     if (!Interface) return FVector::Zero();
     return Interface->GetTargetSystemDependencies()->GetOwner()->GetActorLocation();
@@ -678,7 +678,7 @@ void UTargetSystemComponent::SetControlRotationOnTarget() const
     OwnerPlayerController->SetControlRotation(ControlRotation);
 }
 
-float UTargetSystemComponent::GetDistanceFromTarget(TargetInterface Interface) const
+float UTargetSystemComponent::GetDistanceFromTarget(const TargetInterface& Interface) const
 {
 	return OwnerActor->GetDistanceTo(Interface->GetTargetSystemDependencies()->GetOwner());
 }

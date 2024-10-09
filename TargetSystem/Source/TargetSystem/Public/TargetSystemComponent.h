@@ -92,6 +92,9 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target System")
     ECharacterRotationMode CharacterRotationMode = ECharacterRotationMode::OrientToMovement;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target System")
+	bool bIgnoreViewport = false;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target System")
     bool bAutoTargetSwitch = false;
 
@@ -199,18 +202,18 @@ private:
     bool ObjectIsTargetable(const TargetInterface Interface) const;
 
     int32 GetPointIndexByName(const FString& Name) const;
-    float GetDistanceFromTarget(TargetInterface Interface) const;
+    float GetDistanceFromTarget(const TargetInterface& Interface) const;
     float GetAngleUsingCameraRotation(const FVector& Location) const;
     float GetAngleUsingCharacterRotation(const FVector& Location) const;
     FRotator GetControlRotationOnTarget(TargetInterface Interface) const;
-    FTargetActorDetails GetTargetDetails(TargetInterface Interface) const;
-    FVector GetTargetOwnerLocation(TargetInterface Interface) const;
+    FTargetActorDetails GetTargetDetails(const TargetInterface& Interface) const;
+    FVector GetTargetOwnerLocation(const TargetInterface& Interface) const;
 
     void SetControlRotationOnTarget() const;
     void SetupLocalPlayerController();
 
-    void AddPotentialTargetsByInterface(const TSubclassOf<AActor> ActorClass);
-    bool LineTrace(const FVector Start, const FVector End, FHitResult& Hit) const;
+    void AddPotentialTargetsByInterface(const TSubclassOf<AActor>& ActorClass);
+    bool LineTrace(const FVector& Start, const FVector& End, FHitResult& Hit) const;
 	void CreateAndAttachTargetLockedOnWidgetComponent(const TargetInterface Interface);
 	void ResetIsSwitchingTarget();
 
